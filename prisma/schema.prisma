@@ -12,3 +12,21 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id              String           @id @default(uuid())
+  username        String           @unique
+  password        String
+  fullname        String
+  authentications Authentication[]
+
+  @@map("users")
+}
+
+model Authentication {
+  token  String @id
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  @@map("authentications")
+}
