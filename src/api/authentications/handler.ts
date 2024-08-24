@@ -1,4 +1,5 @@
 import ClientError from '../../exceptions/client-error';
+import ms from '../../utils/time-converter';
 
 interface PostAuthenticationLoginHandler {
   status: 'success' | 'fail' | 'error';
@@ -62,7 +63,7 @@ class AuthenticationHandler {
         httpOnly: true,
         secure: true,
         sameSite: 'None',
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        maxAge: ms(process.env.REFRESH_JWT_EXP!),
       });
 
       set.status = 201;
@@ -81,7 +82,7 @@ class AuthenticationHandler {
           message: error.message,
         };
       }
-
+      console.log(error)
       // Server ERROR!
       set.status = 500;
       return {
@@ -144,7 +145,7 @@ class AuthenticationHandler {
         httpOnly: true,
         secure: true,
         sameSite: 'None',
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        maxAge: ms(process.env.REFRESH_JWT_EXP!),
       });
 
       set.status = 201;

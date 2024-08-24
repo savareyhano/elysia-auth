@@ -1,5 +1,6 @@
 import InvariantError from '../../exceptions/invariant-error';
 import prisma from '../../libs/db';
+import ms from '../../utils/time-converter';
 
 class AuthenticationsService {
   private _prisma: typeof prisma;
@@ -37,11 +38,29 @@ class AuthenticationsService {
     });
   }
 
+  async removeExpiredRefreshTokens(): Promise<void> {
+    const date = new Date().toISOString();
+
+    await this._prisma.authentication.deleteMany({
+      where: {
+        expiresAt: {
+          lt: date, // delete all tokens that are lower (lt) than the current
+                    // date
+        },
+      },
+    });
+  }
+
   async addRefreshToken(refreshToken: string, userId: string): Promise<void> {
+    const expire = new Date(
+      Date.now() + ms(process.env.REFRESH_JWT_EXP!)
+    ).toISOString();
+
     const createdRefreshToken = await this._prisma.authentication.create({
       data: {
         token: refreshToken,
         userId,
+        expiresAt: expire,
       },
       select: {
         token: true,

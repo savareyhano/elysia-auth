@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia';
+import cron, { Patterns } from '@elysiajs/cron';
 import swagger from '@elysiajs/swagger';
 import { jwt } from '@elysiajs/jwt';
 
@@ -18,7 +19,26 @@ import authenticationsValidator from './validator/authentications';
 import users from './api/users';
 import authentications from './api/authentications';
 
+const usersService = new UsersService();
+const authenticationsService = new AuthenticationsService();
+
 const app = new Elysia()
+  // docs:
+  // https://elysiajs.com/plugins/cron
+  .use(
+    cron({
+      name: 'clean-expired-tokens',
+      pattern: Patterns.EVERY_DAY_AT_MIDNIGHT,
+      async run() {
+        try {
+          await authenticationsService.removeExpiredRefreshTokens();
+          console.log('Expired tokens successfully cleaned.');
+        } catch (error) {
+          console.error(`Failed to clean expired tokens: ${error}`);
+        }
+      },
+    })
+  )
   .use(swagger())
   .use(
     jwt({
@@ -34,11 +54,11 @@ const app = new Elysia()
       exp: process.env.REFRESH_JWT_EXP,
     })
   )
-  .use(users(new UsersService(), usersValidator))
+  .use(users(usersService, usersValidator))
   .use(
     authentications(
-      new AuthenticationsService(),
-      new UsersService(),
+      authenticationsService,
+      usersService,
       tokenManager,
       authenticationsValidator
     )
