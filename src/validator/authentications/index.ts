@@ -3,6 +3,7 @@ import { t } from 'elysia';
 interface AuthenticationHandler {
   getAuthenticationRefreshCookieSchema: ReturnType<typeof t.Cookie>;
   postAuthenticationLoginPayloadSchema: ReturnType<typeof t.Object>;
+  deleteAuthenticationLogoutCookieSchema: ReturnType<typeof t.Object>;
 }
 
 const authenticationsValidator: AuthenticationHandler = {
@@ -16,6 +17,11 @@ const authenticationsValidator: AuthenticationHandler = {
       minLength: 1,
     }),
     password: t.String({
+      minLength: 1,
+    }),
+  }),
+  deleteAuthenticationLogoutCookieSchema: t.Cookie({
+    jwt: t.String({
       minLength: 1,
     }),
   }),
