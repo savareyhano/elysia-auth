@@ -201,7 +201,7 @@ class AuthenticationHandler {
         maxAge: ms(process.env.REFRESH_JWT_EXP!),
       });
 
-      set.status = 201;
+      set.status = 200;
       return {
         status: 'success',
         message: 'Token refreshed successfully.',
