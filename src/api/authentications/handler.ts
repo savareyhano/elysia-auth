@@ -89,7 +89,7 @@ class AuthenticationHandler {
           message: error.message,
         };
       }
-      console.log(error)
+
       // Server ERROR!
       set.status = 500;
       return {
@@ -135,7 +135,7 @@ class AuthenticationHandler {
           message: error.message,
         };
       }
-      console.log(error);
+
       // Server ERROR!
       set.status = 500;
       return {
