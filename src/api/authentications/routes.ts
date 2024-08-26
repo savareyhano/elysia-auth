@@ -16,10 +16,23 @@ const routes = (handler: any, validator: any) =>
         body: validator.postAuthenticationLoginPayloadSchema,
       }
     )
+    .delete(
+      '/authentications/logout',
+      ({ cookie: { jwt }, set }: any) =>
+        handler.deleteAuthenticationLogoutHandler(jwt, set),
+      {
+        cookie: validator.deleteAuthenticationLogoutCookieSchema,
+      }
+    )
     .get(
       '/authentications/refresh',
       ({ accessJwt, refreshJwt, cookie: { jwt }, set }: any) =>
-        handler.getAuthenticationRefreshHandler(accessJwt, refreshJwt, jwt, set),
+        handler.getAuthenticationRefreshHandler(
+          accessJwt,
+          refreshJwt,
+          jwt,
+          set
+        ),
       {
         cookie: validator.getAuthenticationRefreshCookieSchema,
       }

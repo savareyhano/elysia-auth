@@ -9,6 +9,11 @@ interface PostAuthenticationLoginHandler {
   };
 }
 
+interface DeleteAuthenticationLogoutHandler {
+  status: 'success' | 'fail' | 'error';
+  message: string;
+}
+
 interface GetAuthenticationRefreshHandler {
   status: 'success' | 'fail' | 'error';
   message: string;
@@ -28,6 +33,8 @@ class AuthenticationHandler {
 
     this.postAuthenticationLoginHandler =
       this.postAuthenticationLoginHandler.bind(this);
+    this.deleteAuthenticationLogoutHandler =
+      this.deleteAuthenticationLogoutHandler.bind(this);
     this.getAuthenticationRefreshHandler =
       this.getAuthenticationRefreshHandler.bind(this);
   }
@@ -82,7 +89,53 @@ class AuthenticationHandler {
           message: error.message,
         };
       }
-      console.log(error)
+
+      // Server ERROR!
+      set.status = 500;
+      return {
+        status: 'error',
+        message: 'Sorry, there was a problem on our server.',
+      };
+    }
+  }
+
+  async deleteAuthenticationLogoutHandler(
+    jwt: any,
+    set: any
+  ): Promise<DeleteAuthenticationLogoutHandler> {
+    try {
+      const refreshToken = jwt.value;
+
+      jwt.remove();
+
+      const verifiedRefreshTokenInDB = await this._service.verifyRefreshToken(
+        refreshToken
+      );
+
+      if (!verifiedRefreshTokenInDB) {
+        set.status = 404;
+        return {
+          status: 'fail',
+          message: 'Token not found.',
+        };
+      }
+
+      await this._service.removeRefreshToken(refreshToken);
+
+      set.status = 200;
+      return {
+        status: 'success',
+        message: 'Token deleted successfully.',
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        set.status = error.statusCode;
+        return {
+          status: 'fail',
+          message: error.message,
+        };
+      }
+
       // Server ERROR!
       set.status = 500;
       return {
@@ -148,7 +201,7 @@ class AuthenticationHandler {
         maxAge: ms(process.env.REFRESH_JWT_EXP!),
       });
 
-      set.status = 201;
+      set.status = 200;
       return {
         status: 'success',
         message: 'Token refreshed successfully.',
