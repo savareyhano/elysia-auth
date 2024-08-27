@@ -106,13 +106,13 @@ class AuthenticationHandler {
     try {
       const refreshToken = jwt.value;
 
-      jwt.remove();
-
       const verifiedRefreshTokenInDB = await this._service.verifyRefreshToken(
         refreshToken
       );
 
       if (!verifiedRefreshTokenInDB) {
+        jwt.remove();
+
         set.status = 404;
         return {
           status: 'fail',
@@ -121,6 +121,8 @@ class AuthenticationHandler {
       }
 
       await this._service.removeRefreshToken(refreshToken);
+
+      jwt.remove();
 
       set.status = 200;
       return {
