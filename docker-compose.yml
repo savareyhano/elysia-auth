@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/elysia_auth
+      ACCESS_JWT_SECRET: secret
+      ACCESS_JWT_EXP: 15m
+      REFRESH_JWT_SECRET: terces
+      REFRESH_JWT_EXP: 1d
+    depends_on:
+      db:
+        condition: service_started
+  db:
+    image: postgres:16
+    ports:
+      - '5432:5432'
+    restart: always
+    environment:
+      POSTGRES_DB: elysia_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
